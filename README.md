@@ -12,7 +12,7 @@ This embedded code requires a backend to communicate with.
 I created a Particle Webook that polls the 
 Purple Air API via Thingspeak, with:
 
-- Full URL: https://api.thingspeak.com/channels/1147330/feeds.json
+- Full URL: `https://api.thingspeak.com/channels/1147330/feeds.json`
 - Query Parameters:
 ```
 {
@@ -22,10 +22,15 @@ Purple Air API via Thingspeak, with:
 }
           
 ```
-### About the PurpleAir API and Thingspeak
+
+NOTE: When you create your own webhook, choose a PurpleAir 
+sensor that is closer to you! 
+
+## Creating a Webhook from the PurpleAir API and Thingspeak
 
 You can obtain the keys necessary to access a specific 
-PurpleAir sensor directly from the PurpleAir map page.
+PurpleAir sensor directly from the 
+[PurpleAir map page](https://www.purpleair.com/map?opt=1/m/i/mPM25/a10/cC0&select=68951#14.72/37.86955/-122.28902).
 - Click on the sensor bubble on the map, 
 - hover the mouse pointer over the "Get This Widget"
 - click on the JSON link
