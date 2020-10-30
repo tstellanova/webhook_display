@@ -1,4 +1,4 @@
-# tiny_web_display
+# webhook_display
 
 Project that uses the Particle device API to periodically 
 wake up, publish to a webhook, then receive updates from 
