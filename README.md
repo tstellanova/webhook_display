@@ -4,6 +4,7 @@ Project that uses the Particle device API to periodically
 wake up, publish to a webhook, then receive updates from 
 the webhook that it then displays to a common OLED display.
 
+![Overview Image](/overview.jpg)
 
 ## Webhook integration
 
