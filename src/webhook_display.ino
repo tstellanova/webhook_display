@@ -10,7 +10,7 @@
 // Controlling Displays over the Internet
 // -----------------------------------
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
@@ -105,11 +105,11 @@ void render_purple(String label, float pm_2_5) {
     }
     
     // PM2.5 display
-    display.setCursor(4, 16);
-    display.setTextSize(2);
+    display.setCursor(4, 18);
+    display.setTextSize(4);
     String h1 = String(pm_2_5, 1);
     display.println(h1);
-    display.setCursor(64, 16);
+    display.setCursor(64, 48);
     display.setTextSize(2);
     display.println(rating);
     display.display();
