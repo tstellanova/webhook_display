@@ -15,6 +15,12 @@
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 
+#define USE_CFG_FILE
+
+#ifdef USE_CFG_FILE
+#include <fcntl.h>
+#endif
+
 
 static unsigned int _loop_count = 0;
 static unsigned int _response_count = 0;
@@ -32,7 +38,7 @@ void setup()
     
     display_setup();
 
-    Time.zone(-7.0);
+    Time.zone(-8.0);
 }
 
 
@@ -132,6 +138,42 @@ int renderCommand(String command) {
     return 0;
 }
 
+#ifdef USE_CFG_FILE
+
+void checkConfigFile() {
+    int fd = open("/test1.cfg", O_RDWR | O_CREAT );
+    Serial.print("fd: ");  
+    Serial.println(fd);  
+    if (fd >= 0) {
+        //we have a filesystem
+        WARN("have fs: %d",fd);
+    }
+    else {
+        Serial.println("fopen failed");     
+    }
+
+}
+
+#else
+void checkConfigFile() { }
+
+#endif
+
+// Configure using file system if available
+void configurationHook() {
+
+    String vstring = System.version();
+    Serial.println(vstring);
+    uint32_t vers = System.versionNumber();
+    Serial.println(vers, HEX);  
+
+    // detect whether we're at 2.0 or above
+    //0xAABBCCDD  AA major BB minor CC patch
+    if ((vers & 0xFF000000) >= 0x02000000) {
+        checkConfigFile();
+    }
+}
+
 // configure the display driver
 void display_setup() {
   Serial.begin(115200);
@@ -141,7 +183,6 @@ void display_setup() {
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32 // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
-    //for(;;); // Don't proceed
   }
 
   // Clear the buffer
@@ -149,6 +190,7 @@ void display_setup() {
   display.display();
   delay(2000);
 
+    configurationHook();    
 }
 
 
