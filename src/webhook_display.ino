@@ -15,12 +15,13 @@
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 
-#undef USE_CFG_FILE
+#define USE_CFG_FILE
 
 #ifdef USE_CFG_FILE
 #include <fcntl.h>
 #endif
 
+static int _cfg_fd = -1;
 static bool _use_lts2_features = false;
 static unsigned int _loop_count = 0;
 static unsigned int _response_count = 0;
@@ -34,8 +35,10 @@ void setup()
     Particle.syncTime();
     Particle.function("render",renderCommand);
     Particle.function("startTZ", setTimeZone);
+    Particle.function("writecfg",handle_writecfg);
+
     Particle.subscribe("hook-response/purplest", purpleAirHandler, System.deviceID());
-    
+
     display_setup();
 
     Time.zone(-8.0);
@@ -43,6 +46,23 @@ void setup()
     delay(5000);
 }
 
+// handle the writecfg command
+int handle_writecfg(String setting) {
+    int rc = -1;
+    if (_cfg_fd >= 0) {
+        const char* cz = setting.c_str();
+        int data_len = strlen(cz);
+        rc = write(_cfg_fd, (const void*)cz, data_len);
+        if (rc > 0) {
+            //write EOL, including null
+            write(_cfg_fd, (const void*)"\n",2);
+        }
+        //flash to flash immediately
+        fsync(_cfg_fd);
+    }
+
+    return rc;
+}
 
 // TODO make this dynamic based on provided string
 int setTimeZone(String args) {
@@ -143,22 +163,17 @@ int renderCommand(String command) {
 #ifdef USE_CFG_FILE
 
 void checkConfigFile() {
-    int fd = open("/test1.cfg", O_RDWR | O_CREAT );
-    Serial.print("fd: ");  
-    Serial.println(fd);  
-    if (fd >= 0) {
-        //we have a filesystem
-        WARN("have fs: %d",fd);
-    }
-    else {
+    _cfg_fd = open("/test1.cfg", O_RDWR | O_APPEND | O_CREAT );
+    Particle.publish("state", String::format("cfg_fd: %d", _cfg_fd));  
+    if  (_cfg_fd < 0) {
         Serial.println("fopen failed");     
     }
 
 }
 
 #else
+//stub
 void checkConfigFile() { }
-
 #endif
 
 // Configure using file system if available
@@ -173,6 +188,9 @@ void configurationHook() {
     //0xAABBCCDD  AA major BB minor CC patch
     if ((vers & 0xFF000000) >= 0x02000000) {
         _use_lts2_features = true;
+    }
+
+    if (_use_lts2_features) {
         checkConfigFile();
     }
 }
