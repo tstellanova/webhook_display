@@ -15,13 +15,13 @@
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 
-#define USE_CFG_FILE
+#undef USE_CFG_FILE
 
 #ifdef USE_CFG_FILE
 #include <fcntl.h>
 #endif
 
-
+static bool _use_lts2_features = false;
 static unsigned int _loop_count = 0;
 static unsigned int _response_count = 0;
 static JsonParserStatic<2048, 100> _json_parser;
@@ -39,6 +39,8 @@ void setup()
     display_setup();
 
     Time.zone(-8.0);
+    //allow some time for cloud flashing
+    delay(5000);
 }
 
 
@@ -170,6 +172,7 @@ void configurationHook() {
     // detect whether we're at 2.0 or above
     //0xAABBCCDD  AA major BB minor CC patch
     if ((vers & 0xFF000000) >= 0x02000000) {
+        _use_lts2_features = true;
         checkConfigFile();
     }
 }
@@ -208,9 +211,17 @@ void loop() {
     delay(60000);
 
 
-    // sleep for a while before requesting another update
-    _sleep_config.mode(SystemSleepMode::STOP).duration(60s);
-    SystemSleepResult result = System.sleep(_sleep_config);
+    if (_use_lts2_features) {
+        _sleep_config.mode(SystemSleepMode::ULTRA_LOW_POWER)
+        .duration(60s)
+        .gpio(D2, RISING);
+        SystemSleepResult result = System.sleep(_sleep_config);
+    }
+    else {
+        // sleep for a while before requesting another update
+        _sleep_config.mode(SystemSleepMode::STOP).duration(60s);
+        SystemSleepResult result = System.sleep(_sleep_config);
+    }
 
 }
 
